@@ -8,7 +8,7 @@
 #include <pthread.h>
 
 // NUM CHANNELS + 1
-#define BUF_LEN 4
+#define BUF_LEN 7
 
 #define NUM_VECTORS 500
 #define false 0
@@ -59,6 +59,7 @@ void *DriverThread(void *inp)
 
         if (iterations > current.dwell_time) {
             iterations = 0;
+            ip++;
 
             if (ip >= state->command->length) {
                 if (state->new_command_ready) {
@@ -72,7 +73,7 @@ void *DriverThread(void *inp)
                 ip = 0;
             }
 
-            current = state->command->vectors[ip++];
+            current = state->command->vectors[ip];
         }
     }
 
@@ -82,7 +83,7 @@ void *DriverThread(void *inp)
 }
 
 int main() {
-    char line[256];
+    char line[1024];
 
     Command command_a, command_b;
 
@@ -92,14 +93,10 @@ int main() {
     state.new_command_ready = false;
 
     // default command for testing
-    state.command->vectors[0] = (LightVector) {200, {0x00, 0xFF, 0xFF, 0xFF}};
-    state.command->vectors[1] = (LightVector) {100, {0x00, 0xFF, 0x00, 0x00}};
-    state.command->vectors[2] = (LightVector) {100, {0x00, 0x00, 0xFF, 0x00}};
-    state.command->vectors[3] = (LightVector) {100, {0x00, 0x00, 0x00, 0xFF}};
-    state.command->vectors[4] = (LightVector) {100, {0x00, 0x00, 0xFF, 0x00}};
-    state.command->vectors[5] = (LightVector) {100, {0x00, 0xFF, 0x00, 0x00}};
-    state.command->vectors[6] = (LightVector) {200, {0x00, 0x00, 0x00, 0x00}};
-    state.command->length = 7;
+    state.command->vectors[0] = (LightVector) {100, {0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00}};
+    state.command->vectors[1] = (LightVector) {100, {0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00}};
+    state.command->vectors[2] = (LightVector) {100, {0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00}};
+    state.command->length = 3;
 
     // Start the driver thread!
     pthread_t driver_thread;
@@ -120,6 +117,7 @@ int main() {
             printf("waiting for input:\n");
             // We can ready a new command!
             fgets(line, sizeof(line), stdin);
+            printf("line *%s*\n", line);
 
             if(!strcmp(line, "BEGIN\n")) {
                 vec_num = 0;

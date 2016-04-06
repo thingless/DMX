@@ -32,6 +32,9 @@ typedef struct SharedState {
 
 void *DriverThread(void *inp)
 {
+    // UNCOMMENT TO DISABLE THE HARDWARE THREAD (for testing)
+    //while(1);
+
     Command* temp_command;
     int fd;
     int ip, iterations;
@@ -82,6 +85,13 @@ void *DriverThread(void *inp)
     pthread_exit(NULL);
 }
 
+void zeroize(unsigned char* buffer, int length) {
+    int i;
+    for(i=0;i<length;i++) {
+        buffer[i] = 0;
+    }
+}
+
 int main() {
     char line[1024];
 
@@ -92,11 +102,25 @@ int main() {
     state.new_command = &command_b;
     state.new_command_ready = false;
 
-    // default command for testing
-    state.command->vectors[0] = (LightVector) {100, {0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00}};
-    state.command->vectors[1] = (LightVector) {100, {0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00}};
-    state.command->vectors[2] = (LightVector) {100, {0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00}};
+    // BEGIN default command for testing
+    // RED -> 0x01 for one frame
+    state.command->vectors[0].dwell_time = 1;
+    zeroize(state.command->vectors[0].buffer, BUF_LEN);
+    state.command->vectors[0].buffer[1] = 0x01;
+
+    // GREEN -> 0x01 for one frame
+    state.command->vectors[1].dwell_time = 1;
+    zeroize(state.command->vectors[1].buffer, BUF_LEN);
+    state.command->vectors[1].buffer[2] = 0x01;
+
+    // BLUE -> 0x01 for one frame
+    state.command->vectors[2].dwell_time = 1;
+    zeroize(state.command->vectors[2].buffer, BUF_LEN);
+    state.command->vectors[2].buffer[3] = 0x01;
+
+    // Three vectors to process
     state.command->length = 3;
+    // END default command for testing
 
     // Start the driver thread!
     pthread_t driver_thread;
@@ -117,7 +141,7 @@ int main() {
             printf("waiting for input:\n");
             // We can ready a new command!
             fgets(line, sizeof(line), stdin);
-            printf("line *%s*\n", line);
+            //printf("line *%s*\n", line);
 
             if(!strcmp(line, "BEGIN\n")) {
                 vec_num = 0;
@@ -127,15 +151,20 @@ int main() {
             if(!strcmp(line, "END\n")) {
                 state.new_command_ready = true;
                 state.new_command->length = vec_num;
+                printf("loading new command of length %d\n", state.new_command->length);
                 continue;
             }
 
-            state.new_command->vectors[vec_num] = (LightVector) {0, {}};
+            // Somehow, this line results in line going from reasonable to empty
+            //state.new_command->vectors[vec_num] = (LightVector) {0, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}};
 
             vec_pos = 0;
 
             // Find the dwell time from the first item in the string
             char *p = strtok(line, " ");
+            if(!p) {
+                continue;
+            }
             state.new_command->vectors[vec_num].dwell_time = atoi(p);
             p = strtok(NULL, " ");
 
@@ -150,6 +179,7 @@ int main() {
         }
         else {
             printf("not ready for a new command yet...\n");
+            usleep(1000);
         }
     }
 

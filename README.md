@@ -1,6 +1,5 @@
-You also need https://github.com/lowlander/dmx_usb_module.git as a Linux driver.
-Don't forget to `rmmod ftdi_sio`
-Build with `gcc -g -o driver -lpthread driver.c`
+Install DMX kernel drivers with 'make install_driver'
+Build with 'make'
 Example program:
 BEGIN
 10 0 50 0 0

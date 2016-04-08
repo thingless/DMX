@@ -11,7 +11,7 @@
 #define DEBUG
 
 // NUM CHANNELS + 1
-#define BUF_LEN 7
+#define BUF_LEN 4
 
 #define NUM_VECTORS 500
 #define COMMAND_IDLE_MICROSECONDS 1000000
@@ -113,34 +113,23 @@ void zeroize(unsigned char* buffer, int length) {
     }
 }
 
+
 int main() {
     char line[1024];
 
-    Command command_a, command_b;
+    Command command_a = { 3, {
+            {1, {0x00, 0x01, 0x00, 0x00}},
+            {1, {0x00, 0x00, 0x01, 0x00}},
+            {1, {0x00, 0x00, 0x00, 0x01}}
+    }};
+    Command command_b;
 
     SharedState state;
     state.command = &command_a;
     state.new_command = &command_b;
     state.new_command_ready = false;
 
-    // BEGIN default command for testing
-    // RED -> 0x01 for one frame
-    state.command->vectors[0].dwell_time = 1;
-    zeroize(state.command->vectors[0].buffer, BUF_LEN);
-    state.command->vectors[0].buffer[1] = 0x01;
-
-    // GREEN -> 0x01 for one frame
-    state.command->vectors[1].dwell_time = 1;
-    zeroize(state.command->vectors[1].buffer, BUF_LEN);
-    state.command->vectors[1].buffer[2] = 0x01;
-
-    // BLUE -> 0x01 for one frame
-    state.command->vectors[2].dwell_time = 1;
-    zeroize(state.command->vectors[2].buffer, BUF_LEN);
-    state.command->vectors[2].buffer[3] = 0x01;
-
     // Three vectors to process
-    state.command->length = 3;
     // END default command for testing
 
     // Start the driver thread!

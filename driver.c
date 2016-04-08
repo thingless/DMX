@@ -152,7 +152,7 @@ int main() {
             printf("waiting for input:\n");
             // We can ready a new command!
             eof = (fgets(line, sizeof(line), stdin) == NULL);
-            printf("line *%s*\n", line);
+            //printf("line *%s*\n", line);
 
             if(eof || !strcmp(line, "END\n")) {
                 if (vec_num > 0) {
@@ -161,14 +161,11 @@ int main() {
                     vec_num=0;
                     printf("loading new command of length %d\n", state.new_command->length);
                 }
-                while(eof) {
-                    usleep(COMMAND_IDLE_MICROSECONDS);
-                }
+                if (eof) break;
                 continue;
             }
 
-            // Somehow, this line results in line going from reasonable to empty
-            //state.new_command->vectors[vec_num] = (LightVector) {0, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}};
+            state.new_command->vectors[vec_num] = (LightVector) {0, {0x00, 0x00, 0x00, 0x00}};
 
             vec_pos = 0;
 
@@ -196,6 +193,9 @@ int main() {
             printf("not ready for a new command yet...\n");
             usleep(COMMAND_IDLE_MICROSECONDS);
         }
+    }
+    while(eof) {
+        usleep(COMMAND_IDLE_MICROSECONDS);
     }
 
     /* Last thing that main() should do */

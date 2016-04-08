@@ -113,6 +113,26 @@ void zeroize(unsigned char* buffer, int length) {
     }
 }
 
+int parse_light_vector(LightVector* vector, char* line) {
+    int vec_pos = 0;
+    // Find the dwell time from the first item in the string
+    char *p = strtok(line, " ");
+    if(!p) {
+        return false;
+    }
+    vector->dwell_time = atoi(p);
+#ifdef DEBUG
+    //printf("vector %d dwell time: '%s' -> %d\n", vec_num, p, state.new_command->vectors[vec_num].dwell_time);
+#endif
+    p = strtok(NULL, " ");
+
+    // The rest of the items in the string are
+    for (; p != NULL; p = strtok(NULL, " ")) {
+        vector->buffer[vec_pos] = (unsigned char)atoi(p);
+        vec_pos++;
+    }
+    return true;
+}
 
 int main() {
     char line[1024];
@@ -144,7 +164,6 @@ int main() {
     int vec_num, vec_pos;
     int eof;
     vec_num = 0;
-    vec_pos = 0;
 
     // DO INPUT STUFF
     while(true) {
@@ -166,27 +185,8 @@ int main() {
             }
 
             state.new_command->vectors[vec_num] = (LightVector) {0, {0x00, 0x00, 0x00, 0x00}};
-
-            vec_pos = 0;
-
-            // Find the dwell time from the first item in the string
-            char *p = strtok(line, " ");
-            if(!p) {
-                continue;
-            }
-            state.new_command->vectors[vec_num].dwell_time = atoi(p);
-#ifdef DEBUG
-            //printf("vector %d dwell time: '%s' -> %d\n", vec_num, p, state.new_command->vectors[vec_num].dwell_time);
-#endif
-            p = strtok(NULL, " ");
-
-            // The rest of the items in the string are
-            for (; p != NULL; p = strtok(NULL, " ")) {
-                state.new_command->vectors[vec_num].buffer[vec_pos] = (unsigned char)atoi(p);
-                vec_pos++;
-            }
-
-            vec_num++;
+            if (parse_light_vector(&(state.new_command->vectors[vec_num]),
+                                   line)) vec_num++;
 
         }
         else {

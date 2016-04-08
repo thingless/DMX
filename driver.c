@@ -7,6 +7,9 @@
 #include <string.h>
 #include <pthread.h>
 
+// To enable debugging
+//#define DEBUG
+
 // NUM CHANNELS + 1
 #define BUF_LEN 7
 
@@ -45,7 +48,12 @@ void *DriverThread(void *inp)
     state = (SharedState*)inp;
 
     // Open the DMX fd
+#ifndef DEBUG
     fd = open("/dev/dmx0", O_WRONLY);
+#endif
+#ifdef DEBUG
+    fd = open("/dev/null", O_WRONLY);
+#endif
     if (fd < 0) {
         perror("open");
         exit(-1);
@@ -53,15 +61,26 @@ void *DriverThread(void *inp)
 
     current = state->command->vectors[0];
 
+    iterations = 0;
+
     // driver!
     while(1) {
+#ifndef DEBUG
         // Write the current buffer value
         write(fd, current.buffer, BUF_LEN);
+#endif
+
+#ifdef DEBUG
+        // Print what we would have written
+        printf("Iteration %d of %d for this vector...\n", iterations, current.dwell_time); 
+        printf("Would write: %02X %02X %02X %02X\n", current.buffer[0], current.buffer[1], current.buffer[2], current.buffer[3]);
+        usleep(500000);
+#endif
 
         // Increment the iter count
         iterations++;
 
-        if (iterations > current.dwell_time) {
+        if (iterations >= current.dwell_time) {
             iterations = 0;
             ip++;
 

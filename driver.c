@@ -11,6 +11,7 @@
 #define BUF_LEN 7
 
 #define NUM_VECTORS 500
+#define COMMAND_IDLE_MICROSECONDS 1000000
 #define false 0
 #define true 1
 
@@ -179,7 +180,7 @@ int main() {
         }
         else {
             printf("not ready for a new command yet...\n");
-            usleep(1000);
+            usleep(COMMAND_IDLE_MICROSECONDS);
         }
     }
 

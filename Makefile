@@ -1,4 +1,4 @@
-driver:
+driver: driver.c
 	gcc -g -o driver -lpthread driver.c
 install_driver: dmx_usb.ko
 	sudo insmod dmx_usb.ko

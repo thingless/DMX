@@ -8,7 +8,7 @@
 #include <pthread.h>
 
 // To enable debugging
-#define DEBUG
+//#define DEBUG
 
 // NUM CHANNELS + 1
 #define BUF_LEN 4
@@ -154,7 +154,6 @@ int main() {
             //printf("line *%s*\n", line);
 
             if(!strcmp(line, "BEGIN\n")) {
-                vec_num = 0;
                 continue;
             }
 

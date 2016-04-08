@@ -142,6 +142,7 @@ int main() {
     }
 
     int vec_num, vec_pos;
+    int eof;
     vec_num = 0;
     vec_pos = 0;
 
@@ -150,17 +151,19 @@ int main() {
         if(!state.new_command_ready) {
             printf("waiting for input:\n");
             // We can ready a new command!
-            fgets(line, sizeof(line), stdin);
-            //printf("line *%s*\n", line);
+            eof = (fgets(line, sizeof(line), stdin) == NULL);
+            printf("line *%s*\n", line);
 
-            if(!strcmp(line, "BEGIN\n")) {
-                continue;
-            }
-
-            if(!strcmp(line, "END\n")) {
-                state.new_command_ready = true;
-                state.new_command->length = vec_num;
-                printf("loading new command of length %d\n", state.new_command->length);
+            if(eof || !strcmp(line, "END\n")) {
+                if (vec_num > 0) {
+                    state.new_command_ready = true;
+                    state.new_command->length = vec_num;
+                    vec_num=0;
+                    printf("loading new command of length %d\n", state.new_command->length);
+                }
+                while(eof) {
+                    usleep(COMMAND_IDLE_MICROSECONDS);
+                }
                 continue;
             }
 

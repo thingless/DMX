@@ -8,7 +8,7 @@
 #include <pthread.h>
 
 // To enable debugging
-//#define DEBUG
+#define DEBUG
 
 // NUM CHANNELS + 1
 #define BUF_LEN 7
@@ -25,7 +25,7 @@ typedef struct LightVector {
 
 typedef struct Command {
     int length;
-    LightVector vectors[BUF_LEN];
+    LightVector vectors[NUM_VECTORS];
 } Command;
 
 typedef struct SharedState {
@@ -62,6 +62,7 @@ void *DriverThread(void *inp)
     current = state->command->vectors[0];
 
     iterations = 0;
+    ip = 0;
 
     // driver!
     while(1) {
@@ -72,7 +73,7 @@ void *DriverThread(void *inp)
 
 #ifdef DEBUG
         // Print what we would have written
-        printf("Iteration %d of %d for this vector...\n", iterations, current.dwell_time); 
+        printf("Iteration %d of %d for vector %d of %d...\n", iterations, current.dwell_time, ip, state->command->length);
         printf("Would write: %02X %02X %02X %02X\n", current.buffer[0], current.buffer[1], current.buffer[2], current.buffer[3]);
         usleep(500000);
 #endif
@@ -186,6 +187,9 @@ int main() {
                 continue;
             }
             state.new_command->vectors[vec_num].dwell_time = atoi(p);
+#ifdef DEBUG
+            //printf("vector %d dwell time: '%s' -> %d\n", vec_num, p, state.new_command->vectors[vec_num].dwell_time);
+#endif
             p = strtok(NULL, " ");
 
             // The rest of the items in the string are

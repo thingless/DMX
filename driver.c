@@ -73,7 +73,7 @@ void *DriverThread(void *inp)
     fd = open("/dev/null", O_WRONLY);
 #endif
     if (fd < 0) {
-        perror("open");
+        perror("failure opening /dev/dmx0");
         exit(-1);
     }
 
@@ -125,6 +125,7 @@ void *DriverThread(void *inp)
     close(fd);
 
     printf("Driver thread exiting\n");
+    printf("Press Ctrl-D (to send EOF) if MainThread doesn't quit promptly\n");
     pthread_exit(NULL);
 }
 
@@ -155,14 +156,12 @@ int main() {
     // Handle SIGINT to gracefully shutdown
     signal(SIGINT, intHandler);
 
-    Command command_a;
+    Command command_a = { 3, {
+            {1, {0x00, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00}},
+            {1, {0x00, 0x00, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00, 0x01, 0x00}},
+            {1, {0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00, 0x01}}
+    }};
     Command command_b;
-
-    // Initialize the default command
-    parse_light_vector(&command_a.vectors[0], "1 0 1 0 0 1 0 0 1 0 0 1 0 0");
-    parse_light_vector(&command_a.vectors[1], "1 0 0 1 0 0 1 0 0 1 0 0 1 0");
-    parse_light_vector(&command_a.vectors[2], "1 0 0 0 1 0 0 1 0 0 1 0 0 1");
-    command_a.length = 3;
 
     SharedState state;
     state.command = &command_a;

@@ -47,12 +47,16 @@ if __name__ == '__main__':
     parser.add_argument("--step-length", type=int, default=1,
                         help="How many frames should each step be? (hint: use --steps instead)")
     parser.add_argument("--brightness", type=int, default=20, help="Maximum brightness per channel (0-255)")
+    parser.add_argument("--leds", type=int, default=4, help="How many LEDs to generate channels for? (def 4)")
     args = parser.parse_args()
 
-    print(args)
     l1 = list(color_wheel(args.steps * len(PTS)))
     l2 = list(color_wheel(args.steps * len(PTS)))
     l2 = l2[len(l2)//2:] + l2[:len(l2)//2] 
     l = [x for pair in zip(l1, l2) for x in pair]
     for point in l:
-        print(args.step_length, 0, ' '.join(str(x) for x in scale(point, args.brightness)))
+        print(args.step_length, 0,
+            ' '.join(
+                [' '.join(str(x) for x in scale(point, args.brightness)) for i in range(args.leds)]
+            )
+        )

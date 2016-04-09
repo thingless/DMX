@@ -3,6 +3,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
@@ -11,7 +12,7 @@
 //#define DEBUG
 
 // NUM CHANNELS + 1
-#define BUF_LEN 4
+#define BUF_LEN 13
 
 #define NUM_VECTORS 32767
 #define COMMAND_IDLE_MICROSECONDS 10000
@@ -34,6 +35,20 @@ typedef struct SharedState {
     Command* new_command;
 } SharedState;
 
+
+static volatile int keepRunning = 1;
+
+void intHandler(int dummy) {
+    keepRunning = 0;
+}
+
+void zeroize(unsigned char* buffer, int length) {
+    int i;
+    for(i=0;i<length;i++) {
+        buffer[i] = 0;
+    }
+}
+
 void *DriverThread(void *inp)
 {
     // UNCOMMENT TO DISABLE THE HARDWARE THREAD (for testing)
@@ -46,6 +61,9 @@ void *DriverThread(void *inp)
 
     SharedState* state;
     state = (SharedState*)inp;
+
+    unsigned char zero_buffer[BUF_LEN];
+    zeroize(zero_buffer, BUF_LEN);
 
     // Open the DMX fd
 #ifndef DEBUG
@@ -65,7 +83,7 @@ void *DriverThread(void *inp)
     ip = 0;
 
     // driver!
-    while(1) {
+    while(keepRunning) {
 #ifndef DEBUG
         // Write the current buffer value
         write(fd, current.buffer, BUF_LEN);
@@ -101,16 +119,13 @@ void *DriverThread(void *inp)
         }
     }
 
+    // If we got here, someone hit Ctrl-C - write all 0s
+    write(fd, zero_buffer, BUF_LEN);
+
     close(fd);
 
+    printf("Driver thread exiting\n");
     pthread_exit(NULL);
-}
-
-void zeroize(unsigned char* buffer, int length) {
-    int i;
-    for(i=0;i<length;i++) {
-        buffer[i] = 0;
-    }
 }
 
 int parse_light_vector(LightVector* vector, char* line) {
@@ -137,12 +152,17 @@ int parse_light_vector(LightVector* vector, char* line) {
 int main() {
     char line[1024];
 
-    Command command_a = { 3, {
-            {1, {0x00, 0x01, 0x00, 0x00}},
-            {1, {0x00, 0x00, 0x01, 0x00}},
-            {1, {0x00, 0x00, 0x00, 0x01}}
-    }};
+    // Handle SIGINT to gracefully shutdown
+    signal(SIGINT, intHandler);
+
+    Command command_a;
     Command command_b;
+
+    // Initialize the default command
+    parse_light_vector(&command_a.vectors[0], "1 0 1 0 0 1 0 0 1 0 0 1 0 0");
+    parse_light_vector(&command_a.vectors[1], "1 0 0 1 0 0 1 0 0 1 0 0 1 0");
+    parse_light_vector(&command_a.vectors[2], "1 0 0 0 1 0 0 1 0 0 1 0 0 1");
+    command_a.length = 3;
 
     SharedState state;
     state.command = &command_a;
@@ -166,7 +186,7 @@ int main() {
     vec_num = 0;
 
     // DO INPUT STUFF
-    while(true) {
+    while(keepRunning) {
         if(!state.new_command_ready) {
             printf("waiting for input:\n");
             // We can ready a new command!
@@ -194,9 +214,11 @@ int main() {
             usleep(COMMAND_IDLE_MICROSECONDS);
         }
     }
-    while(eof) {
+    while(eof && keepRunning) {
         usleep(COMMAND_IDLE_MICROSECONDS);
     }
+
+    printf("Main thread exiting\n");
 
     /* Last thing that main() should do */
     pthread_exit(NULL);

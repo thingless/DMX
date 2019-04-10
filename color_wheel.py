@@ -38,7 +38,7 @@ def color_wheel(steps):
         yield interpolate(pt_a, pt_b, wt_a)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Create a color wheel animation")
+    parser = argparse.ArgumentParser(description="A basic webserver and HTML page to run programs")
     parser.add_argument("--steps", type=int, default=64,
                         help="How many steps should each point in the color wheel get?")
     parser.add_argument("--step-length", type=int, default=1,

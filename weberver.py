@@ -4,6 +4,7 @@ from flask import Flask, render_template, request
 import color_wheel as cw
 import argparse
 import strobe_wheel
+import sys
 
 app = Flask(__name__)
 LEDS = 4
@@ -39,6 +40,7 @@ def write_program(ops):
         print('END')
     elif ops['program'] == 'strobe':
         strobe_wheel.strobe_wheel(64, 1, int(ops['brightness']), LEDS)
+    sys.stdout.flush()
 
 
 

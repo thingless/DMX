@@ -40,6 +40,20 @@ def color_wheel(steps):
         wt_a = float(steps_per_point - incr) / steps_per_point
         yield interpolate(pt_a, pt_b, wt_a)
 
+def strobe_wheel(steps, step_length, brightness, leds):
+    l1 = list(color_wheel(steps * len(PTS)))
+    l2 = list(color_wheel(steps * len(PTS)))
+    l2 = l2[len(l2)//2:] + l2[:len(l2)//2]
+    l = [x for pair in zip(l1, l2) for x in pair]
+    for point in l:
+        print(step_length, 0,
+            ' '.join(
+                [' '.join(str(x) for x in scale(point, brightness)) for i in range(leds)]
+            )
+        )
+    print('END')
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Create a color wheel animation")
     parser.add_argument("--steps", type=int, default=64,
@@ -50,13 +64,4 @@ if __name__ == '__main__':
     parser.add_argument("--leds", type=int, default=4, help="How many LEDs to generate channels for? (def 4)")
     args = parser.parse_args()
 
-    l1 = list(color_wheel(args.steps * len(PTS)))
-    l2 = list(color_wheel(args.steps * len(PTS)))
-    l2 = l2[len(l2)//2:] + l2[:len(l2)//2] 
-    l = [x for pair in zip(l1, l2) for x in pair]
-    for point in l:
-        print(args.step_length, 0,
-            ' '.join(
-                [' '.join(str(x) for x in scale(point, args.brightness)) for i in range(args.leds)]
-            )
-        )
+    strobe_wheel(args.steps, args.step_length, args.brightness, args.leds)

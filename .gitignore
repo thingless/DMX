@@ -1,3 +1,4 @@
 dmx_usb_module
 *.ko
 driver
+*.pyc

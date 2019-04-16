@@ -29,7 +29,7 @@ def _steam_callback(in_data, frame_count, time_info, status):
     global beat_onset_fn
     with bpm_lock:
         bpm = b
-        beat_onset_fn = onset_fn
+        #beat_onset_fn = onset_fn
     return (None, pyaudio.paContinue)
 
 def start_calc_beat_delta():

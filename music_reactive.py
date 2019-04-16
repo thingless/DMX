@@ -12,8 +12,8 @@ import threading
 MIC_RATE=44100
 SECONDS_TO_SAMPLE=5
 
-bpm_lock=threading.Lock()
-bpm=120
+bps_lock=threading.Lock()
+bps=2
 beat_onset_fn=lambda:True
 
 def eprint(*args, **kwargs):
@@ -23,12 +23,12 @@ def _steam_callback(in_data, frame_count, time_info, status):
     data = np.fromstring(in_data, dtype=np.float32)
     #onset_fn=btrack.calculateOnsetDF(data)
     beats = btrack.trackBeats(data)
-    b = 60.0/round(np.mean(np.diff(beats)),2)
-    eprint('Detected bpm', b, 'aka bps', b/60.0)
-    global bpm
+    b = round(np.mean(np.diff(beats)),2)
+    eprint('Detected bpm', 60.0/b, 'aka bps', b)
+    global bps
     global beat_onset_fn
-    with bpm_lock:
-        bpm = b
+    with bps_lock:
+        bps = b
         #beat_onset_fn = onset_fn
     return (None, pyaudio.paContinue)
 
@@ -38,7 +38,7 @@ def start_calc_beat_delta():
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Detects BPM and updates based on it")
+    parser = argparse.ArgumentParser(description="Detects bps and updates based on it")
 
     parser.add_argument("--brightness", type=int, default=20, help="Maximum brightness per channel (0-255)")
     parser.add_argument("--leds", type=int, default=4, help="How many LEDs to generate channels for? (def 4)")
@@ -46,9 +46,9 @@ if __name__ == '__main__':
     start_calc_beat_delta()
 
     while True:
-        with bpm_lock:
+        with bps_lock:
             beat_onset_fn()
-            bps=bpm/60.0
+            mybps=bps
         print(3, 0, 5,5,5,5,5,5,5,5,5,5,5,5)
         print(int(round((100.0/bps)-3)), 0, 0,0,0,0,0,0,0,0,0,0,0,0)
         print('END')

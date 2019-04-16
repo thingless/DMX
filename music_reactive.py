@@ -51,6 +51,7 @@ if __name__ == '__main__':
             beat_onset_fn()
             mybps=bps
         if curr_bps is None or abs(mybps-curr_bps) > 5:
+            eprint('updating bps from ', curr_bps, ' to ', mybps)
             curr_bps=mybps
             print(10, 0, 5,5,5,5,5,5,5,5,5,5,5,5)
             print(int(round((100.0/bps)-10)), 0, 0,0,0,0,0,0,0,0,0,0,0,0)

@@ -28,6 +28,7 @@ def _steam_callback(in_data, frame_count, time_info, status):
     with bpm_lock:
         bpm = 60.0/round(np.mean(np.diff(beats)),2)
         beat_onset_fn = onset_fn
+    eprint('Detected %s bpm', bpm)
     return (None, pyaudio.paContinue)
 
 def start_calc_beat_delta():

@@ -50,7 +50,7 @@ if __name__ == '__main__':
             beat_onset_fn()
             bps=bpm/60.0
         print(3, 0, 5,5,5,5,5,5,5,5,5,5,5,5)
-        print(int(round((bps*100.0)-3)), 0, 0,0,0,0,0,0,0,0,0,0,0,0)
+        print(int(round((100.0/bps)-3)), 0, 0,0,0,0,0,0,0,0,0,0,0,0)
         print('END')
         sys.stdout.flush()
         time.sleep(SECONDS_TO_SAMPLE-0.25) #nothing going to happen for a while

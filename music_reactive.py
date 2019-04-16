@@ -21,8 +21,8 @@ def eprint(*args, **kwargs):
 
 def _steam_callback(in_data, frame_count, time_info, status):
     data = np.fromstring(in_data, dtype=np.float32)
-    onset_fn=btrack.calculateOnsetDF(data)
-    beats = btrack.trackBeatsFromOnsetDF(data)
+    #onset_fn=btrack.calculateOnsetDF(data)
+    beats = btrack.trackBeats(data)
     b = 60.0/round(np.mean(np.diff(beats)),2)
     eprint('Detected %s bpm', b)
     global bpm

@@ -45,12 +45,15 @@ if __name__ == '__main__':
     args = parser.parse_args()
     start_calc_beat_delta()
 
+    curr_bps=bps
     while True:
         with bps_lock:
             beat_onset_fn()
             mybps=bps
-        print(3, 0, 5,5,5,5,5,5,5,5,5,5,5,5)
-        print(int(round((100.0/bps)-3)), 0, 0,0,0,0,0,0,0,0,0,0,0,0)
-        print('END')
-        sys.stdout.flush()
+        if abs(mybps-curr_bps) > 5:
+            curr_bps=mybps
+            print(10, 0, 5,5,5,5,5,5,5,5,5,5,5,5)
+            print(int(round((100.0/bps)-10)), 0, 0,0,0,0,0,0,0,0,0,0,0,0)
+            print('END')
+            sys.stdout.flush()
         time.sleep(SECONDS_TO_SAMPLE-0.25) #nothing going to happen for a while

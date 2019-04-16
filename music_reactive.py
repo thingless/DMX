@@ -23,12 +23,13 @@ def _steam_callback(in_data, frame_count, time_info, status):
     data = np.fromstring(in_data, dtype=np.float32)
     onset_fn=btrack.calculateOnsetDF(data)
     beats = btrack.trackBeatsFromOnsetDF(data)
+    b = 60.0/round(np.mean(np.diff(beats)),2)
+    eprint('Detected %s bpm', b)
     global bpm
     global beat_onset_fn
     with bpm_lock:
-        bpm = 60.0/round(np.mean(np.diff(beats)),2)
+        bpm = b
         beat_onset_fn = onset_fn
-    eprint('Detected %s bpm', bpm)
     return (None, pyaudio.paContinue)
 
 def start_calc_beat_delta():

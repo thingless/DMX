@@ -24,7 +24,7 @@ def _steam_callback(in_data, frame_count, time_info, status):
     #onset_fn=btrack.calculateOnsetDF(data)
     beats = btrack.trackBeats(data)
     b = 60.0/round(np.mean(np.diff(beats)),2)
-    eprint('Detected %s bpm', b)
+    eprint('Detected bpm', b)
     global bpm
     global beat_onset_fn
     with bpm_lock:
@@ -52,4 +52,5 @@ if __name__ == '__main__':
         print(3, 0, 5,5,5,5,5,5,5,5,5,5,5,5)
         print(int(round((bps*100.0)-3)), 0, 0,0,0,0,0,0,0,0,0,0,0,0)
         print('END')
+        sys.stdout.flush()
         time.sleep(SECONDS_TO_SAMPLE-0.25) #nothing going to happen for a while
